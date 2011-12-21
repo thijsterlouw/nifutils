@@ -65,7 +65,9 @@ nif_rot13(Input) when is_list(Input) ->
 				Input	   
 			).
 	
-%===========================================
+%%
+%% Internal helper functions
+%%
 	
 rot13(X) when X >= $a,
 			  X <  $n; 
@@ -81,8 +83,3 @@ rot13(X) when X >= $n,
 
 rot13(X) ->
     X.
-
-
-
-	
-	
