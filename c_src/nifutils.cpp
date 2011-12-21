@@ -1,20 +1,3 @@
-/**
- * Copyright 2011,  Filipe David Manana  <fdmanana@apache.org>
- * Web:  http://github.com/fdmanana/snappy-erlang-nif
- *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
- **/
-
 #include <iostream>
 #include <cstring>
 #include <sys/time.h>
@@ -66,6 +49,42 @@ make_error(ErlNifEnv* env, const char* mesg)
 BEGIN_C
 
 
+ERL_NIF_TERM
+nif_uniform(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
+{
+	struct timeval tv;
+	gettimeofday(&tv, NULL);
+	int ip;
+
+	if (argc<1 || !enif_get_int(env, argv[0], &ip))         	//needs to be an integer
+	{
+	    return enif_make_badarg(env);
+	}
+	else if (ip<=1)                            		//only allow >1
+	{
+	    return enif_make_badarg(env);
+	}
+	else
+	{
+	    return enif_make_int(env, (tv.tv_usec % ip)+1);
+	}
+}
+
+ERL_NIF_TERM
+nif_random(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
+{
+	struct timeval tv;
+	gettimeofday(&tv, NULL);
+	return enif_make_int(env, tv.tv_usec);
+}
+
+ERL_NIF_TERM
+nif_time(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
+{
+	return enif_make_int(env, time(0));
+}
+
+
 ERL_NIF_TERM 
 nif_now(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
 {
@@ -108,11 +127,14 @@ on_upgrade(ErlNifEnv* env, void** priv, void** old_priv, ERL_NIF_TERM info)
 
 
 static ErlNifFunc nif_functions[] = {
-    {"nif_now", 0, nif_now}
+	{"nif_uniform", 1, nif_uniform},
+	{"nif_random", 0, nif_random},
+	{"nif_time", 0, nif_time},
+	{"nif_now", 0, nif_now}
 };
 
 
-ERL_NIF_INIT(snappy, nif_functions, &on_load, &on_reload, &on_upgrade, NULL);
+ERL_NIF_INIT(nifutils, nif_functions, &on_load, &on_reload, &on_upgrade, NULL);
 
 
 END_C
